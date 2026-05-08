@@ -1,0 +1,107 @@
+﻿using FluentValidation.Results;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using PlataformaEducacional.Core.Enumerators;
+using PlataformaEducacional.Core.Notifications;
+using System.Security.Claims;
+
+namespace PlataformaEducacional.WebApi.Core.Controllers.Base
+{
+    [ApiController]
+    [Route("api/cursos")]
+    public class MainController : ControllerBase
+    {
+        private readonly INotificador _notificador;
+        //public readonly IUser AppUser;
+        //private readonly UserManager<IdentityUser> _userManager;
+        protected Guid UsuarioId { get; set; }
+        protected bool UsuarioAutenticado { get; set; }
+
+        protected MainController(INotificador notificador)
+        {
+            _notificador = notificador;
+            //AppUser = appUser;
+
+            //if (appUser.IsAuthenticated())
+            //{
+            //    UsuarioId = appUser.GetUserId();
+            //    UsuarioAutenticado = true;
+            //}
+        }
+
+        protected bool OperacaoValida()
+        {
+            return !_notificador.TemNotificacao();
+        }
+
+        protected ActionResult CustomResponse(object result = null)
+        {
+            if (OperacaoValida())
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(_notificador.ObterNotificacoes().Select(n => n));
+        }
+
+        protected ActionResult CustomResponse(ModelStateDictionary modelState)
+        {
+            if (!modelState.IsValid) NotificarErroModelInvalida(modelState);
+            return CustomResponse();
+        }
+
+        protected ActionResult CustomResponse(ValidationResult validationResult)
+        {
+            foreach (var error in validationResult.Errors)
+                NotificarErro(error.PropertyName, error.ErrorMessage);
+
+            return CustomResponse();
+        }
+
+        protected void NotificarErroModelInvalida(ModelStateDictionary modelState)
+        {
+            var erros = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => new
+                {
+                    Campo = ModelState
+                        .FirstOrDefault(m => m.Value.Errors.Contains(e))
+                        .Key,
+                    Mensagem = e.ErrorMessage
+                }).ToList();
+
+            foreach (var erro in erros)
+            {
+                NotificarErro(erro.Campo, erro.Mensagem);
+            }
+        }
+
+        protected void NotificarErro(string campo, string mensagem)
+        {
+            _notificador.Handle(new Notificacao
+            {
+                Campo = campo,
+                Mensagem = mensagem
+            });
+        }
+
+        protected TipoUsuario? ObterPerfilUsuario()
+        {
+            var perfilString = User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (Enum.TryParse<TipoUsuario>(perfilString, true, out var perfil))
+            {
+                return perfil;
+            }
+
+            return null;
+        }
+
+        protected string? ObterIdUsuario()
+        {
+            return User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
+
+    }
+}

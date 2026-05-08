@@ -1,0 +1,86 @@
+﻿using PlataformaEducacional.Alunos.Domain.Models;
+using PlataformaEducacional.Core.Data;
+
+namespace PlataformaEducacional.Alunos.Domain.Interfaces;
+
+public interface IAlunoRepository : IRepository<Aluno>
+{
+    /// <summary>
+    /// Adds a student to the collection.
+    /// </summary>
+    /// <param name="aluno">The student to add.</param>
+    void Adicionar(Aluno aluno);
+
+    /// <summary>
+    /// Adiciona uma nova matrícula.
+    /// </summary>
+    void AdicionarMatricula(Matricula matricula);
+
+    /// <summary>
+    /// Atualiza uma matrícula existente.
+    /// </summary>
+    void AtualizarMatricula(Matricula matricula);
+
+    void AttachMatricula(Matricula matricula);
+
+    /// <summary>
+    /// Adiciona progresso de uma aula concluída.
+    /// </summary>
+    void AdicionarProgresso(ProgressoAula progressoAula);
+
+    /// <summary>
+    /// Adiciona um endereço a um aluno existente.
+    /// </summary>
+    /// <param name="endereco">O endereço a ser adicionado.</param>
+    void AdicionarEndereco(Endereco endereco);
+
+    void AdicionarCertifficado(Certificado certificado);
+
+    /// <summary>
+    /// Obtém um aluno pelo seu ID.
+    /// </summary>
+    /// <param name="id">ID do aluno.</param>
+    /// <returns>O aluno correspondente ao ID fornecido, ou null se não encontrado.</returns>
+    Task<Aluno?> ObterPorId(Guid id);
+
+    /// <summary>
+    /// Obtém o endereço de um aluno pelo ID do aluno.
+    /// </summary>
+    /// <param name="id">ID do aluno.</param>
+    /// <returns>O endereço correspondente ao ID do aluno, ou null se não encontrado.</returns>
+    Task<Endereco?> ObterEnderecoPorAlunoId(Guid id);
+
+    /// <summary>
+    /// Obtém um aluno pelo CPF.
+    /// </summary>
+    /// <param name="cpf">CPF do aluno.</param>
+    /// <returns>O aluno correspondente ao CPF fornecido, ou null se não encontrado.</returns>
+    Task<Aluno?> ObterPorCpf(string cpf);
+
+    /// <summary>
+    /// Obtém todos os alunos.
+    /// </summary>
+    /// <returns>Uma coleção de todos os alunos.</returns>
+    Task<IEnumerable<Aluno>> ObterTodos();
+
+    /// <summary>
+    /// Obtém uma matrícula pelo ID.
+    /// </summary>
+    Task<Matricula?> ObterMatriculaPorId(Guid id);
+
+    /// <summary>
+    /// Obtém a primeira matrícula pendente.
+    /// </summary>
+    /// <returns>A matrícula pendente, ou null se não houver.</returns>
+    Task<IEnumerable<Matricula>> ObterMatriculasPendentesPorAluno(Guid alunoId);
+
+    /// <summary>
+    /// Obtém todas as matrículas de um aluno.
+    /// </summary>
+    Task<IEnumerable<Matricula>> ObterMatriculasPorAluno(Guid alunoId);
+
+    /// <summary>
+    /// Obtém um certificado pelo ID.
+    /// </summary>
+    Task<Certificado?> ObterCertificado(Guid id);
+}
